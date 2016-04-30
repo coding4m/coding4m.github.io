@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>就差个程序员了</title>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://coding4m.io/"/>
+  <updated>2016-04-30T05:19:23.000Z</updated>
+  <id>http://coding4m.io/</id>
+  
+  <author>
+    <name>coding4m@gmail.com</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>AKKA笔记（1） —— Actor简介</title>
+    <link href="http://coding4m.io/2016/04/30/akka-notes-introducing-actors/"/>
+    <id>http://coding4m.io/2016/04/30/akka-notes-introducing-actors/</id>
+    <published>2016-04-29T16:57:30.000Z</published>
+    <updated>2016-04-30T05:19:23.000Z</updated>
+    
+    <content type="html">&lt;blockquote&gt;
+&lt;p&gt;翻译中 …&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果有人做过多线程的开发，那么他应该不会否认&lt;em&gt;完成&lt;/em&gt;多线程应用的困难及痛苦。我说&lt;em&gt;完成&lt;/em&gt;，是因为开始总是简单的，而性能提升的过程中你也会得到许多的乐趣。然而，当你试图去寻找简单的方式从子任务中恢复错误，或者试图重现一些诡异的Bugs，又或者当性能分析工具告诉你，这些线程浪费了大量的时间阻塞在对共享状态的修改时，这一切将变得痛苦。&lt;/p&gt;
+&lt;p&gt;我并不会过多去讨论Java并发的API及集合让这些变得更好更简单。毕竟你来到这里，说明你可能需要更好的控制子任务，又或者，你希望有更高层次的抽象来避免涉及到锁与同步块。&lt;/p&gt;
+&lt;p&gt;在这一系列AKKA笔记的文章中，我们将通过一些简单的Akka例子来探索许多的特性在我们拥有的工具套件中。&lt;/p&gt;
+&lt;h2 id=&quot;ACTOR是什么？&quot;&gt;&lt;a href=&quot;#ACTOR是什么？&quot; class=&quot;headerlink&quot; title=&quot;ACTOR是什么？&quot;&gt;&lt;/a&gt;ACTOR是什么？&lt;/h2&gt;&lt;p&gt;把Actor当做仅仅通过邮件来交谈的人。&lt;br&gt;&lt;br&gt;让我们展开来说一说。&lt;/p&gt;
+&lt;h3 id=&quot;1-消息传递&quot;&gt;&lt;a href=&quot;#1-消息传递&quot; class=&quot;headerlink&quot; title=&quot;1. 消息传递&quot;&gt;&lt;/a&gt;1. 消息传递&lt;/h3&gt;&lt;p&gt;Consider two persons - A wise Teacher and Student. The Student sends a mail every morning to the Teacher and the wise Teacher sends a wise quote back.&lt;/p&gt;
+&lt;h4 id=&quot;注意事项：&quot;&gt;&lt;a href=&quot;#注意事项：&quot; class=&quot;headerlink&quot; title=&quot;注意事项：&quot;&gt;&lt;/a&gt;注意事项：&lt;/h4&gt;&lt;ol&gt;
+&lt;li&gt;The student sends a mail. Once sent, the mail couldn’t be edited. Talk about natural immutability.&lt;/li&gt;
+&lt;li&gt;The Teacher checks his mailbox when he wishes to do so.&lt;/li&gt;
+&lt;li&gt;The Teacher also sends a mail back (immutable again).&lt;/li&gt;
+&lt;li&gt;The student checks the mailbox at his own time.&lt;/li&gt;
+&lt;li&gt;The student doesn’t wait for the reply. (no blocking)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;That pretty much sums up the basic block of the Actor Model - passing messages.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/Akka%20Messaging.PNG&quot; alt=&quot;传递消息&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;2-CONCURRENCY&quot;&gt;&lt;a href=&quot;#2-CONCURRENCY&quot; class=&quot;headerlink&quot; title=&quot;2. CONCURRENCY&quot;&gt;&lt;/a&gt;2. CONCURRENCY&lt;/h3&gt;&lt;p&gt;Now, imagine there are 3 wise teachers and 3 students - every student sends notes to every other teacher. What happens then? Nothing changes actually. Everybody has their own mailbox. One subtle point to note here is this :&lt;/p&gt;
+&lt;p&gt;By default, Mails in the mailbox are read/processed in the order they arrived.&lt;/p&gt;
+&lt;p&gt;Internally, by default it is a &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ConcurrentLinkedQueue&lt;/a&gt;. And since nobody waits for the mail to be picked up, it is simply a non-blocking message. (There are a &lt;a href=&quot;(http://doc.akka.io/docs/akka/snapshot/scala/mailboxes.html&quot;&gt;variety of built-in mailboxes&lt;/a&gt; including bounded and priority based. In fact, we could build one ourself too)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/Akka%20concurrency.PNG&quot; alt=&quot;Concurrency&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3-FAILOVER&quot;&gt;&lt;a href=&quot;#3-FAILOVER&quot; class=&quot;headerlink&quot; title=&quot;3. FAILOVER&quot;&gt;&lt;/a&gt;3. FAILOVER&lt;/h3&gt;&lt;p&gt;Imagine these 3 teachers are from three different departments - History, Geography and Philosophy.&lt;/p&gt;
+&lt;p&gt;History teachers replies with a note on an Event in the past, Geography teachers sends an Interesting Place and Philosophy teachers, a quote. Each student sends message to each teacher and gets responses. The student doesnt care which teacher in the department sends the reply back. What if one day, a teacher falls sick? There has to be at least one teacher handling the mails from the department. In this case, another teacher in the department steps up and does the job.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/Akka%20Failover.PNG&quot; alt=&quot;容错&quot;&gt;&lt;/p&gt;
+&lt;h4 id=&quot;注意事项：-1&quot;&gt;&lt;a href=&quot;#注意事项：-1&quot; class=&quot;headerlink&quot; title=&quot;注意事项：&quot;&gt;&lt;/a&gt;注意事项：&lt;/h4&gt;&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;There could be a pool of Actors who does different things.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;An Actor could do something that causes an exception. It wouldn’t be able to recover by itself. In which case a new Actor could be created in place of the old one. Alternatively, the Actor could just ignore that one particular message and proceed with the rest of the messages. These are called Directives and we’ll discuss them later.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;4-多任务处理&quot;&gt;&lt;a href=&quot;#4-多任务处理&quot; class=&quot;headerlink&quot; title=&quot;4. 多任务处理&quot;&gt;&lt;/a&gt;4. 多任务处理&lt;/h3&gt;&lt;p&gt;For a twist, let’s assume that each of these teachers also send the exam score through mail too, if the student asks for it. Similarly, an the Actor could handle more than one type of message comfortably.&lt;/p&gt;
+&lt;h3 id=&quot;5-CHAINING&quot;&gt;&lt;a href=&quot;#5-CHAINING&quot; class=&quot;headerlink&quot; title=&quot;5. CHAINING&quot;&gt;&lt;/a&gt;5. CHAINING&lt;/h3&gt;&lt;p&gt;What if the student would like to get only one final consolidated trivia mail instead of three?&lt;/p&gt;
+&lt;p&gt;We could do that too with Actors too. We could chain the teachers as a hierarchy. We’ll come back to that later when we talk about Supervisors and revisit the same thought when we talk about Futures.&lt;/p&gt;
+&lt;p&gt;As requested by Mohan, let’s just try to map the analogy components with the the components in the Actor Model.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/AkkaComponentMatching.png&quot; alt=&quot;CHAINING&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Students and the Teachers becomes our Actors. The Email Inbox becomes the Mailbox component. The request and the response can’t be modified. They are immutable objects. Finally, the MessageDispatcher component in Actor manages the mailbox and routes the messages to the respective Mailbox.&lt;/p&gt;
+&lt;p&gt;废话少说，让我们开始&lt;a href=&quot;http://rerun.me/2014/09/19/akka-notes-actor-messaging-1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;编码&lt;/a&gt;。。。&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;翻译中 …&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果有人做过多线程的开发，那么他应该不会否认&lt;em&gt;完成&lt;/em&gt;多线程应用的困难及痛苦。我说&lt;em&gt;完成&lt;/em&gt;，是因为开始总是简单的，而性能提升的过程中你也会得到许多的乐趣。然而，当你试图
+    
+    </summary>
+    
+      <category term="akka笔记" scheme="http://coding4m.io/categories/akka%E7%AC%94%E8%AE%B0/"/>
+    
+    
+      <category term="akka" scheme="http://coding4m.io/tags/akka/"/>
+    
+  </entry>
+  
+</feed>
