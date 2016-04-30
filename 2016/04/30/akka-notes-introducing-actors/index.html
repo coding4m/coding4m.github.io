@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Description-->
+    
+        <meta name="description" content="翻译中 …
+
+如果有人做过多线程的开发，那么他应该不会否认完成多线程应用的困难及痛苦。我说完成，是因为开始总是简单的，而性能提升的过程中你也会得到许多的乐趣。然而，当你试图去寻找简单的方式从子任务中恢复错误，或者试图重现一些诡异的Bugs，又或者当性能分析工具告诉你，这些线程浪费了大量的时间阻塞在对">
+    
+
+    <!--Author-->
+    
+        <meta name="author" content="coding4m@gmail.com">
+    
+
+    <!--Open Graph Title-->
+    
+        <meta property="og:title" content="AKKA笔记 —— Actor简介"/>
+    
+
+    <!--Open Graph Site Name-->
+    <meta property="og:site_name" content="就差一个程序员了"/>
+
+    <!--Page Cover-->
+    
+        <meta property="og:image" content="undefined"/>
+    
+
+    <!-- Title -->
+    
+    <title>AKKA笔记 —— Actor简介 - 就差一个程序员了</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Custom Fonts -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Gallery -->
+    <link href="//cdn.rawgit.com/noelboss/featherlight/1.3.5/release/featherlight.min.css" type="text/css" rel="stylesheet" />
+
+    <!-- Google Analytics -->
+    
+
+
+</head>
+
+<body>
+
+    <!-- Menu -->
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Software is created in your head.</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                
+                    <li>
+                        <a href="/archives">Archives</a>
+                    </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+    <!-- Main Content -->
+    <!-- Page Header -->
+<!-- Set your background image for this header in your post front-matter: cover -->
+
+<header class="intro-header" style="background-image: url('http://www.codeblocq.com/assets/projects/hexo-theme-clean-blog/img/home-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <h1>AKKA笔记 —— Actor简介</h1>
+                    
+                    <span class="meta">
+                        <!-- Date and Author -->
+                        
+                        2016-04-30
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Tags and categories -->
+           
+                <div class="col-lg-4 col-lg-offset-2 col-md-5 col-md-offset-1 post-tags">
+                    
+                        
+
+
+<a href="/tags/akka/">#akka</a>
+
+
+                    
+                </div>
+                <div class="col-lg-4 col-md-5 post-categories">
+                    
+                        
+
+<a href="/categories/akka笔记/">akka笔记</a>
+
+                    
+                </div>
+            
+
+            <!-- Gallery -->
+            
+
+            <!-- Post Main Content -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <blockquote>
+<p>翻译中 …</p>
+</blockquote>
+<p>如果有人做过多线程的开发，那么他应该不会否认<em>完成</em>多线程应用的困难及痛苦。我说<em>完成</em>，是因为开始总是简单的，而性能提升的过程中你也会得到许多的乐趣。然而，当你试图去寻找简单的方式从子任务中恢复错误，或者试图重现一些诡异的Bugs，又或者当性能分析工具告诉你，这些线程浪费了大量的时间阻塞在对共享状态的修改时，这一切将变得痛苦。</p>
+<p>我并不会过多去讨论Java并发的API及集合让这些变得更好更简单。毕竟你来到这里，说明你可能需要更好的控制子任务，又或者，你希望有更高层次的抽象来避免涉及到锁与同步块。</p>
+<p>在这一系列AKKA笔记的文章中，我们将通过一些简单的Akka例子来探索许多的特性在我们拥有的工具套件中。</p>
+<h2 id="ACTOR是什么？"><a href="#ACTOR是什么？" class="headerlink" title="ACTOR是什么？"></a>ACTOR是什么？</h2><p>把Actor当做仅仅通过邮件来交谈的人。<br><br>让我们展开来说一说。</p>
+<h3 id="1-消息传递"><a href="#1-消息传递" class="headerlink" title="1. 消息传递"></a>1. 消息传递</h3><p>Consider two persons - A wise Teacher and Student. The Student sends a mail every morning to the Teacher and the wise Teacher sends a wise quote back.</p>
+<h4 id="注意事项："><a href="#注意事项：" class="headerlink" title="注意事项："></a>注意事项：</h4><ol>
+<li>The student sends a mail. Once sent, the mail couldn’t be edited. Talk about natural immutability.</li>
+<li>The Teacher checks his mailbox when he wishes to do so.</li>
+<li>The Teacher also sends a mail back (immutable again).</li>
+<li>The student checks the mailbox at his own time.</li>
+<li>The student doesn’t wait for the reply. (no blocking)</li>
+</ol>
+<p>That pretty much sums up the basic block of the Actor Model - passing messages.</p>
+<p><img src="https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/Akka%20Messaging.PNG" alt="传递消息"></p>
+<h3 id="2-CONCURRENCY"><a href="#2-CONCURRENCY" class="headerlink" title="2. CONCURRENCY"></a>2. CONCURRENCY</h3><p>Now, imagine there are 3 wise teachers and 3 students - every student sends notes to every other teacher. What happens then? Nothing changes actually. Everybody has their own mailbox. One subtle point to note here is this :</p>
+<p>By default, Mails in the mailbox are read/processed in the order they arrived.</p>
+<p>Internally, by default it is a <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html" target="_blank" rel="external">ConcurrentLinkedQueue</a>. And since nobody waits for the mail to be picked up, it is simply a non-blocking message. (There are a <a href="(http://doc.akka.io/docs/akka/snapshot/scala/mailboxes.html">variety of built-in mailboxes</a> including bounded and priority based. In fact, we could build one ourself too)</p>
+<p><img src="https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/Akka%20concurrency.PNG" alt="Concurrency"></p>
+<h3 id="3-FAILOVER"><a href="#3-FAILOVER" class="headerlink" title="3. FAILOVER"></a>3. FAILOVER</h3><p>Imagine these 3 teachers are from three different departments - History, Geography and Philosophy.</p>
+<p>History teachers replies with a note on an Event in the past, Geography teachers sends an Interesting Place and Philosophy teachers, a quote. Each student sends message to each teacher and gets responses. The student doesnt care which teacher in the department sends the reply back. What if one day, a teacher falls sick? There has to be at least one teacher handling the mails from the department. In this case, another teacher in the department steps up and does the job.</p>
+<p><img src="https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/Akka%20Failover.PNG" alt="容错"></p>
+<h4 id="注意事项：-1"><a href="#注意事项：-1" class="headerlink" title="注意事项："></a>注意事项：</h4><ol>
+<li><p>There could be a pool of Actors who does different things.</p>
+</li>
+<li><p>An Actor could do something that causes an exception. It wouldn’t be able to recover by itself. In which case a new Actor could be created in place of the old one. Alternatively, the Actor could just ignore that one particular message and proceed with the rest of the messages. These are called Directives and we’ll discuss them later.</p>
+</li>
+</ol>
+<h3 id="4-多任务处理"><a href="#4-多任务处理" class="headerlink" title="4. 多任务处理"></a>4. 多任务处理</h3><p>For a twist, let’s assume that each of these teachers also send the exam score through mail too, if the student asks for it. Similarly, an the Actor could handle more than one type of message comfortably.</p>
+<h3 id="5-CHAINING"><a href="#5-CHAINING" class="headerlink" title="5. CHAINING"></a>5. CHAINING</h3><p>What if the student would like to get only one final consolidated trivia mail instead of three?</p>
+<p>We could do that too with Actors too. We could chain the teachers as a hierarchy. We’ll come back to that later when we talk about Supervisors and revisit the same thought when we talk about Futures.</p>
+<p>As requested by Mohan, let’s just try to map the analogy components with the the components in the Actor Model.</p>
+<p><img src="https://raw.githubusercontent.com/arunma/blogimages/master/Akka1/AkkaComponentMatching.png" alt="CHAINING"></p>
+<p>Students and the Teachers becomes our Actors. The Email Inbox becomes the Mailbox component. The request and the response can’t be modified. They are immutable objects. Finally, the MessageDispatcher component in Actor manages the mailbox and routes the messages to the respective Mailbox.</p>
+<p>废话少说，让我们开始<a href="http://rerun.me/2014/09/19/akka-notes-actor-messaging-1" target="_blank" rel="external">编码</a>。。。</p>
+
+            </div>
+
+            <!-- Comments -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+    <hr />
+    <h3>Kommentare:</h3>
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+    <!-- Footer -->
+    <hr />
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <li>
+                        <a href="" target="_blank">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="" target="_blank">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/coding4m" target="_blank">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted">Original Theme <a target="_blank" href="http://startbootstrap.com/template-overviews/clean-blog/">Clean Blog</a> from <a href="http://startbootstrap.com/" target="_blank">Start Bootstrap</a></p>
+                <p class="copyright text-muted">Adapted for <a target="_blank" href="https://hexo.io/">Hexo</a> by <a href="http://www.codeblocq.com/" target="_blank">Jonathan Klughertz</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+    <!-- After footer scripts -->
+    
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap -->
+<script src="/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Gallery -->
+<script src="//cdn.rawgit.com/noelboss/featherlight/1.3.5/release/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+
+<!-- Disqus Comments -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'coding4m';
+
+    (function(){
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+</body>
+
+</html>
